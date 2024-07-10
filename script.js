@@ -58,10 +58,8 @@ function iterations(z0) {
 const tamCell = 1;
 
 function getColor(iter) {
-    // Normaliza o número de iterações entre 0 e 1
     let t = iter / maxIteration;
 
-    // Define cores baseadas em um gradiente de temperatura
     let r = Math.floor(255 * (t));
     let g = Math.floor(255 * (t));
     let b = Math.floor(255 * (t));
