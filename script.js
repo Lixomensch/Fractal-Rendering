@@ -21,6 +21,17 @@ class Vector2 {
     }
 }
 
+const palette = [
+    { value: 0.0, color: { r: 25, g: 24, b: 23 } },
+    { value: 0.03, color: { r: 120, g: 90, b: 70 } },
+    { value: 0.05, color: { r: 130, g: 24, b: 23 } },
+    { value: 0.25, color: { r: 250, g: 179, b: 100 } },
+    { value: 0.5, color: { r: 43, g: 65, b: 98 } },
+    { value: 0.85, color: { r: 11, g: 110, b: 79 } },
+    { value: 0.95, color: { r: 150, g: 110, b: 79 } },
+    { value: 1.0, color: { r: 255, g: 255, b: 255 } }
+];
+
 const maxIteration = 500;
 let constant = new Vector2(-0.8, 0.156);
 let canvas = document.getElementById('canvas');
@@ -57,16 +68,27 @@ function iterations(z0) {
 
 const tamCell = 1;
 
-function getColor(iter) {
-    let t = iter / maxIteration;
-
-    let r = Math.floor(255 * (t));
-    let g = Math.floor(255 * (t));
-    let b = Math.floor(255 * (t));
-
-    return `rgb(${r}, ${g}, ${b})`;
+function getColorFromPalette(value) {
+    if (value >= 1.0) {
+        return palette[palette.length - 1].color;
+    } else if (value <= 0.0) {
+        return palette[0].color;
+    }
+    for (let i = 1; i < palette.length; i++) {
+        if (palette[i].value > value) {
+            const lower = palette[i - 1];
+            const upper = palette[i];
+            const range = upper.value - lower.value;
+            const ratio = (value - lower.value) / range;
+            return {
+                r: Math.floor((1 - ratio) * lower.color.r + ratio * upper.color.r),
+                g: Math.floor((1 - ratio) * lower.color.g + ratio * upper.color.g),
+                b: Math.floor((1 - ratio) * lower.color.b + ratio * upper.color.b)
+            };
+        }
+    }
+    return { r: 255, g: 255, b: 255 };
 }
-
 
 function renderJulia() {
     for (let x = 0; x < canvas.width / tamCell; x++) {
@@ -74,13 +96,16 @@ function renderJulia() {
             let zx = (x / (canvas.width / tamCell)) * 4.0 / zoom - 2.0 / zoom + offsetX;
             let zy = (y / (canvas.height / tamCell)) * 4.0 / zoom - 2.0 / zoom + offsetY;
             let z0 = new Vector2(zx, zy);
-            let i = iterations(z0);
+            let iter = iterations(z0);
+            let normalizedIter = iter / maxIteration;
+            let color = getColorFromPalette(normalizedIter);
 
-            ctx.fillStyle = getColor(i);
+            ctx.fillStyle = `rgb(${color.r}, ${color.g}, ${color.b})`;
             ctx.fillRect(x * tamCell, y * tamCell, tamCell, tamCell);
         }
     }
 }
+
 
 canvas.addEventListener('wheel', (event) => {
     if (event.deltaY < 0) {
