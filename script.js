@@ -1,25 +1,12 @@
-class Vector2 {
-    constructor(x, y) {
-        this.x = x;
-        this.y = y;
-    }
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
 
-    add(other) {
-        this.x += other.x;
-        this.y += other.y;
-        return this;
-    }
-
-    subtract(other) {
-        this.x -= other.x;
-        this.y -= other.y;
-        return this;
-    }
-
-    mod() {
-        return this.x * this.x + this.y * this.y;
-    }
-}
+const maxIteration = 500;
+let zoom = 1.3;
+let offsetX = 0.0;
+let offsetY = 0.0;
 
 const palette = [
     { value: 0.0, color: { r: 25, g: 24, b: 23 } },
@@ -29,44 +16,8 @@ const palette = [
     { value: 0.5, color: { r: 43, g: 65, b: 98 } },
     { value: 0.85, color: { r: 11, g: 110, b: 79 } },
     { value: 0.95, color: { r: 150, g: 110, b: 79 } },
-    { value: 1.0, color: { r: 255, g: 255, b: 255 } }
+    { value: 1.0, color: { r: 255, g: 255, b: 255 } },
 ];
-
-const maxIteration = 500;
-let constant = new Vector2(-0.8, 0.156);
-let canvas = document.getElementById('canvas');
-let ctx = canvas.getContext('2d');
-
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
-
-let zoom = 1.0;
-let offsetX = 0.0;
-let offsetY = 0.0;
-
-function computeNext(current) {
-    let xr = current.x * current.x - current.y * current.y;
-    let zi = 2.0 * current.x * current.y;
-
-    return new Vector2(xr, zi).add(constant);
-}
-
-function iterations(z0) {
-    let zn = z0;
-    let i = 0;
-    
-    while (i < maxIteration && zn.mod() <= 4.0) {
-        zn = computeNext(zn);
-        i++;
-    }
-
-    let mod = Math.sqrt(zn.mod());
-    let smooth = Math.log(Math.max(1, Math.log(mod)));
-    
-    return i - smooth;
-}
-
-const tamCell = 1;
 
 function getColorFromPalette(value) {
     if (value >= 1.0) {
@@ -91,21 +42,47 @@ function getColorFromPalette(value) {
 }
 
 function renderJulia() {
-    for (let x = 0; x < canvas.width / tamCell; x++) {
-        for (let y = 0; y < canvas.height / tamCell; y++) {
-            let zx = (x / (canvas.width / tamCell)) * 4.0 / zoom - 2.0 / zoom + offsetX;
-            let zy = (y / (canvas.height / tamCell)) * 4.0 / zoom - 2.0 / zoom + offsetY;
-            let z0 = new Vector2(zx, zy);
-            let iter = iterations(z0);
-            let normalizedIter = iter / maxIteration;
-            let color = getColorFromPalette(normalizedIter);
+    const workerCount = Math.min(navigator.hardwareConcurrency || 4, 8);
+    const width = canvas.width;
+    const height = canvas.height;
+    const segmentWidth = Math.ceil(width / workerCount);
+    const imageData = ctx.createImageData(width, height);
+    const data = imageData.data;
+    let completedWorkers = 0;
 
-            ctx.fillStyle = `rgb(${color.r}, ${color.g}, ${color.b})`;
-            ctx.fillRect(x * tamCell, y * tamCell, tamCell, tamCell);
-        }
+    for (let i = 0; i < workerCount; i++) {
+        const worker = new Worker('worker.js');
+
+        worker.onmessage = function(event) {
+            const result = event.data;
+
+            result.forEach(({ x, y, i }) => {
+                const normalizedIter = i / maxIteration;
+                const color = getColorFromPalette(normalizedIter);
+                const index = (y * width + x) * 4;
+                data[index] = color.r;
+                data[index + 1] = color.g;
+                data[index + 2] = color.b;
+                data[index + 3] = 255;
+            });
+
+            if (++completedWorkers === workerCount) {
+                ctx.putImageData(imageData, 0, 0);
+            }
+        };
+
+        worker.postMessage({
+            startX: i * segmentWidth,
+            endX: Math.min((i + 1) * segmentWidth, width),
+            width: width,
+            height: height,
+            zoom: zoom,
+            offsetX: offsetX,
+            offsetY: offsetY,
+            maxIteration: maxIteration
+        });
     }
 }
-
 
 canvas.addEventListener('wheel', (event) => {
     if (event.deltaY < 0) {
