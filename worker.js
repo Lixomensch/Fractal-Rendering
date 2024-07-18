@@ -36,6 +36,5 @@ self.onmessage = function(event) {
         }
     }
 
-    self.postMessage(result);
+    self.postMessage({ result, startX, endX });
 };
-

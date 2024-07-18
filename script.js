@@ -19,6 +19,7 @@ const palette = [
     { value: 1.0, color: { r: 255, g: 255, b: 255 } },
 ];
 
+
 function getColorFromPalette(value) {
     if (value >= 1.0) {
         return palette[palette.length - 1].color;
@@ -54,9 +55,10 @@ function renderJulia() {
         const worker = new Worker('worker.js');
 
         worker.onmessage = function(event) {
-            const result = event.data;
+            const { result, startX, endX } = event.data;
 
-            result.forEach(({ x, y, i }) => {
+            for (let j = 0; j < result.length; j++) {
+                const { x, y, i } = result[j];
                 const normalizedIter = i / maxIteration;
                 const color = getColorFromPalette(normalizedIter);
                 const index = (y * width + x) * 4;
@@ -64,9 +66,10 @@ function renderJulia() {
                 data[index + 1] = color.g;
                 data[index + 2] = color.b;
                 data[index + 3] = 255;
-            });
+            }
 
-            if (++completedWorkers === workerCount) {
+            completedWorkers++;
+            if (completedWorkers === workerCount) {
                 ctx.putImageData(imageData, 0, 0);
             }
         };
@@ -85,11 +88,7 @@ function renderJulia() {
 }
 
 canvas.addEventListener('wheel', (event) => {
-    if (event.deltaY < 0) {
-        zoom *= 1.1;
-    } else {
-        zoom /= 1.1;
-    }
+    zoom *= event.deltaY < 0 ? 1.1 : 0.9;
     renderJulia();
 });
 
@@ -110,12 +109,29 @@ canvas.addEventListener('mousemove', (event) => {
         offsetY -= dy;
         startX = event.clientX;
         startY = event.clientY;
-        renderJulia();
+        renderJuliaDebounced();
     }
 });
 
 canvas.addEventListener('mouseup', () => {
     isDragging = false;
 });
+
+window.addEventListener('resize', (event) => {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    renderJulia();
+});
+
+const renderJuliaDebounced = debounce(renderJulia, 50);
+
+function debounce(func, wait) {
+    let timeout;
+    return function(...args) {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => func.apply(this, args), wait);
+    };
+}
+
 
 renderJulia();
