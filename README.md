@@ -26,7 +26,7 @@ This project implements Julia set fractal rendering using HTML5, JavaScript, and
 1. Clone this repository:
 
     ```bash
-    git clone https://github.com/YOUR_USERNAME/fractal-rendering.git
+    git clone https://github.com/Lixomensch/Fractal-Rendering.git
     ```
 
 2. Navigate to the project directory:
