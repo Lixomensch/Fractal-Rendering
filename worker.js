@@ -15,10 +15,10 @@ function iterations(z0, maxIteration, constant) {
     }
 
     const mod = Math.sqrt(z0[0] * z0[0] + z0[1] * z0[1]);
-    const smooth = Math.log(Math.max(1, Math.log(mod)));
+    const smooth = i - Math.log(Math.max(mod, 1)) / Math.log(2);
 
-    return i - smooth;
-}
+    return smooth;
+}   
 
 self.onmessage = function(event) {
     const { startX, endX, width, height, zoom, offsetX, offsetY, maxIteration, constant } = event.data;
@@ -34,5 +34,5 @@ self.onmessage = function(event) {
         }
     }
 
-    self.postMessage({ result, startX, endX });
+    self.postMessage(result);
 };

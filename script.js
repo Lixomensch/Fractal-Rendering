@@ -43,31 +43,33 @@ function getColorFromPalette(value) {
   return { r: 255, g: 255, b: 255 };
 }
 
+const workerCount = Math.min(navigator.hardwareConcurrency || 4, 8);
+const workers = Array.from({ length: workerCount }, () => new Worker("worker.js"));
+
+let imageData = ctx.createImageData(canvas.width, canvas.height);
+
 function renderJulia() {
-  const workerCount = Math.min(navigator.hardwareConcurrency || 4, 8);
-  const width = canvas.width;
-  const height = canvas.height;
-  const segmentWidth = Math.ceil(width / workerCount);
-  const imageData = ctx.createImageData(width, height);
+  const segmentWidth = Math.ceil(canvas.width / workerCount);
+
   const data = imageData.data;
   let completedWorkers = 0;
 
   for (let i = 0; i < workerCount; i++) {
-    const worker = new Worker("worker.js");
+    const worker = workers[i];
 
     worker.onmessage = function (event) {
-      const { result, startX, endX } = event.data;
+      const result = event.data;
 
       for (let j = 0; j < result.length; j++) {
         const { x, y, i } = result[j];
         const normalizedIter = i / maxIteration;
         const color = getColorFromPalette(normalizedIter);
-        const index = (y * width + x) * 4;
+        const index = (y * canvas.width + x) * 4;
         data[index] = color.r;
         data[index + 1] = color.g;
         data[index + 2] = color.b;
         data[index + 3] = 255;
-      }
+      } 
 
       completedWorkers++;
       if (completedWorkers === workerCount) {
@@ -77,9 +79,9 @@ function renderJulia() {
 
     worker.postMessage({
       startX: i * segmentWidth,
-      endX: Math.min((i + 1) * segmentWidth, width),
-      width: width,
-      height: height,
+      endX: Math.min((i + 1) * segmentWidth, canvas.width),
+      width: canvas.width,
+      height: canvas.height,
       zoom: zoom,
       offsetX: offsetX,
       offsetY: offsetY,
@@ -122,6 +124,7 @@ canvas.addEventListener("mouseup", () => {
 window.addEventListener("resize", (event) => {
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
+  imageData = ctx.createImageData(canvas.width, canvas.height);
   renderJulia();
 });
 
@@ -139,9 +142,11 @@ const applyChanges = document.getElementById("applyChanges");
 
 applyChanges.addEventListener("click", (event) => {
     maxIteration = document.getElementById("iterations").value;
-    const constantReal = document.getElementById("constantReal").value;
-    const constantImaginary = document.getElementById("constantImaginary").value;
+    const constantReal = document.getElementById("cR").value;
+    const constantImaginary = document.getElementById("cI").value;
     variableC = document.getElementById("variableC").checked;
+    startConstantVariation();
+    stopConstantVariation();
 
     constant[0] = parseFloat(constantReal);
     constant[1] = parseFloat(constantImaginary);
@@ -152,9 +157,42 @@ const cancelChanges = document.getElementById("cancelChanges");
 
 cancelChanges.addEventListener("click", (event) => {
     document.getElementById("iterations").value = maxIteration;
-    document.getElementById("constantReal").value = constant[0];
-    document.getElementById("constantImaginary").value = constant[1];
+    document.getElementById("cR").value = constant[0];
+    document.getElementById("cI").value = constant[1];
     document.getElementById("variableC").checked = variableC;
 });
+
+let intervalId;
+let step = 0.1;
+let directionR = 1;
+let directionI = 1;
+
+function startConstantVariation() {
+  if (variableC) {
+    intervalId = setInterval(() => {
+      constant[0] += step * directionR;
+      constant[1] += step * directionI;
+
+      document.getElementById("cR").value = Math.trunc(constant[0] * 10) / 10;
+      document.getElementById("cI").value = Math.trunc(constant[1] * 10) / 10;
+
+      if (constant[0] >= 1.0 || constant[0] <= -1.0) {
+        directionR *= -1;
+      }
+      if (constant[1] >= 1.0 || constant[1] <= -1.0) {
+        directionI *= -1;
+      }
+      
+      renderJulia();
+    }, 500);
+  }
+}
+
+function stopConstantVariation() {
+  if(!variableC){
+    clearInterval(intervalId);
+    intervalId = null;
+  }
+}
 
 renderJulia();
