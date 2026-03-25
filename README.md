@@ -1,25 +1,29 @@
 # Fractal Rendering
 
-This project implements Julia set fractal rendering using HTML5, JavaScript, and Web Workers. It generates fractal images on a `<canvas>` element, with support for interactive zooming and panning.
+This project implements Julia set fractal rendering using HTML5, JavaScript modules, and Web Workers. It generates fractal images on a `<canvas>` element with high-performance pixel processing.
 
 ## Features
 
-- Real-time rendering of Julia set fractals.
-- Interactive zoom and pan using the mouse.
-- Automatic canvas resizing when the browser window size changes.
-- Utilizes Web Workers to parallelize the rendering process for improved performance.
+- Real-time Julia set rendering with a single `putImageData` commit per frame.
+- Worker-based fractal computation with transfer of typed pixel buffers.
+- Palette lookup-table color mapping for smooth gradients and lower main-thread cost.
+- Debounced resize handling to avoid redundant renders.
+- Adaptive quality mode with hysteresis control in the UI.
+- Reset button that stops simulation and returns to the initial stage.
 
 ## Technologies Used
 
 - **HTML5**: For the basic page structure and `<canvas>` element.
-- **JavaScript**: For rendering logic and user interaction.
-- **Web Workers**: For parallel processing of fractal rendering.
+- **JavaScript (ES Modules)**: For rendering pipeline, state management, and interaction logic.
+- **Web Workers**: For parallel fractal iteration and pixel generation.
+- **Typed Arrays / ImageData**: For efficient per-pixel operations.
 
 ## Setup
 
 ### Requirements
 
 - A modern browser with support for HTML5 and Web Workers.
+- Python 3 (optional, for local server script).
 
 ### Running the Project
 
@@ -35,19 +39,36 @@ This project implements Julia set fractal rendering using HTML5, JavaScript, and
     cd fractal-rendering
     ```
 
-3. Open the `index.html` file in a browser:
+3. Start a local server:
 
     ```bash
-    open index.html
+    python3 serve.py
     ```
 
-    Or drag and drop the `index.html` file into a browser window.
+4. Open in browser:
+
+    ```
+    http://127.0.0.1:8080
+    ```
+
+You can also choose a custom port:
+
+    ```bash
+    python3 serve.py --port 3000
+    ```
 
 ## Usage
 
 - **Zoom**: Use the mouse wheel to zoom in or out on the fractal.
 - **Pan**: Click and drag to move the view of the fractal.
-- **Resizing**: The canvas will automatically resize to fit the browser window when the window size changes.
+- **Apply**: Applies current control values.
+- **Reset**: Stops C animation and returns parameters/view to the initial stage.
+
+## Adaptive Iterations
+
+- **Adaptive quality** is exposed in the UI and is **unchecked by default**.
+- Use the **Hysteresis** slider to control stability of quality-band transitions.
+- Higher hysteresis values reduce quality oscillation while zooming; lower values react faster.
 
 
 ## License

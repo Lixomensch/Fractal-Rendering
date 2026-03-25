@@ -1,0 +1,267 @@
+@import url("https://fonts.googleapis.com/css2?family=Syne:wght@500;700;800&family=Manrope:wght@400;500;600&display=swap");
+:root {
+        --bg-0: #111015;
+        --bg-1: #171a23;
+        --bg-2: #0b0d14;
+        --panel-0: rgba(22, 25, 35, 0.88);
+        --panel-border: rgba(255, 255, 255, 0.12);
+        --ink-0: #f7f7f8;
+        --ink-1: #bfc4d0;
+        --accent: #ff8a2b;
+        --accent-2: #ffd166;
+        --input-bg: rgba(255, 255, 255, 0.05);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+      }
+
+      body {
+        overflow: hidden;
+        color: var(--ink-0);
+        font-family: "Manrope", "Trebuchet MS", "Segoe UI", sans-serif;
+        background:
+          radial-gradient(1200px 600px at 90% -10%, rgba(255, 138, 43, 0.2), transparent 60%),
+          radial-gradient(800px 500px at -10% 90%, rgba(255, 209, 102, 0.16), transparent 60%),
+          linear-gradient(160deg, var(--bg-0), var(--bg-1) 45%, var(--bg-2));
+      }
+
+      .app {
+        position: relative;
+        display: grid;
+        grid-template-columns: minmax(280px, 360px) 1fr;
+        width: 100vw;
+        height: 100vh;
+        gap: 0;
+      }
+
+      #menu {
+        position: relative;
+        z-index: 2;
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+        padding: 22px 18px;
+        backdrop-filter: blur(12px);
+        background: var(--panel-0);
+        border-right: 1px solid var(--panel-border);
+        box-shadow: 14px 0 28px rgba(0, 0, 0, 0.22);
+      }
+
+      .brand {
+        margin-bottom: 6px;
+      }
+
+      .brand h1 {
+        margin: 0;
+        font-family: "Syne", "Avenir Next", "Franklin Gothic Medium", sans-serif;
+        font-size: clamp(1.2rem, 1.8vw, 1.7rem);
+        font-weight: 800;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+      }
+
+      .brand p {
+        margin: 8px 0 0;
+        font-size: 0.88rem;
+        color: var(--ink-1);
+        line-height: 1.4;
+      }
+
+      .controls {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .field {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .field label,
+      .field span {
+        font-size: 0.88rem;
+        color: var(--ink-1);
+      }
+
+      .field input[type="number"] {
+        width: 126px;
+        border: 1px solid var(--panel-border);
+        border-radius: 10px;
+        background: var(--input-bg);
+        color: var(--ink-0);
+        padding: 7px 10px;
+        font-size: 0.92rem;
+        font-family: inherit;
+        outline: none;
+        transition: border-color 150ms ease, box-shadow 150ms ease;
+      }
+
+      .field input[type="number"]:focus {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px rgba(255, 138, 43, 0.18);
+      }
+
+      .field input[type="range"] {
+        width: 100%;
+        accent-color: var(--accent);
+      }
+
+      .field-range {
+        grid-template-columns: 1fr;
+        gap: 6px;
+      }
+
+      .range-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .range-header span {
+        font-size: 0.82rem;
+        color: var(--ink-0);
+      }
+
+      .toggle {
+        grid-template-columns: 1fr auto;
+      }
+
+      .toggle input[type="checkbox"] {
+        width: 18px;
+        height: 18px;
+        accent-color: var(--accent);
+      }
+
+      .actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-top: 4px;
+      }
+
+      #menu button {
+        border: 0;
+        border-radius: 10px;
+        padding: 9px 12px;
+        font-family: inherit;
+        font-weight: 600;
+        cursor: pointer;
+        transition: transform 120ms ease, filter 140ms ease;
+      }
+
+      #applyChanges {
+        background: linear-gradient(140deg, var(--accent), var(--accent-2));
+        color: #211a12;
+      }
+
+      #cancelChanges {
+        background: rgba(255, 255, 255, 0.08);
+        color: var(--ink-0);
+      }
+
+      #menu button:hover {
+        filter: brightness(1.05);
+      }
+
+      #menu button:active {
+        transform: translateY(1px);
+      }
+
+      .help {
+        margin-top: auto;
+        font-size: 0.8rem;
+        line-height: 1.45;
+        color: var(--ink-1);
+        border-top: 1px solid var(--panel-border);
+        padding-top: 12px;
+      }
+
+      .canvas-wrap {
+        position: relative;
+        overflow: hidden;
+      }
+
+      .canvas-wrap::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        background:
+          linear-gradient(120deg, rgba(255, 255, 255, 0.05), transparent 30%),
+          radial-gradient(600px 300px at 20% -10%, rgba(255, 255, 255, 0.06), transparent 70%);
+        z-index: 1;
+      }
+
+      #canvas {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        background: #05070b;
+        display: block;
+        cursor: grab;
+        animation: canvasReveal 550ms ease-out;
+      }
+
+      #canvas:active {
+        cursor: grabbing;
+      }
+
+      @keyframes canvasReveal {
+        from {
+          opacity: 0;
+          transform: scale(1.012);
+        }
+        to {
+          opacity: 1;
+          transform: scale(1);
+        }
+      }
+
+      @media (max-width: 900px) {
+        .app {
+          grid-template-columns: 1fr;
+          grid-template-rows: auto 1fr;
+        }
+
+        #menu {
+          border-right: 0;
+          border-bottom: 1px solid var(--panel-border);
+          box-shadow: 0 10px 24px rgba(0, 0, 0, 0.2);
+          gap: 14px;
+        }
+
+        .controls {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 10px 14px;
+        }
+
+        .field {
+          grid-template-columns: 1fr;
+          align-items: start;
+        }
+
+        .field input[type="number"] {
+          width: 100%;
+        }
+
+        .actions {
+          grid-column: 1 / -1;
+        }
+
+        .help {
+          display: none;
+        }
+      }
