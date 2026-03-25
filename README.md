@@ -74,7 +74,3 @@ You can also choose a custom port:
 ## License
 
 This project is licensed under the [MIT License](LICENSE).
-
-
-Feel free to explore and contribute to the project. We appreciate your interest and contributions!
-
